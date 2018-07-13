@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package xmc.srv.dispatcher.meta;
+
+import "github.com/xmc-dev/xmc/eval-srv/proto/eval/eval.proto";
+
+option go_package = "meta";
+
+service MetaService {
+  rpc GetEvals(GetEvalsRequest) returns (GetEvalsResponse) {}
+  rpc DispatchNext(DispatchNextRequest) returns (DispatchNextResponse) {}
+}
+
+message GetEvalsRequest {
+  bool refresh = 1;
+}
+
+message GetEvalsResponse {
+  repeated xmc.srv.eval.eval.NodeInfo evals = 1;
+}
+
+message DispatchNextRequest {
+}
+
+message DispatchNextResponse {
+}

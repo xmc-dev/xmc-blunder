@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package xmc.srv.core.dataset;
+
+option go_package = "dataset";
+
+import "github.com/xmc-dev/xmc/xmc-core/proto/searchmeta/searchmeta.proto";
+import "google/protobuf/duration.proto";
+
+service DatasetService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Get(GetRequest) returns (GetResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+  rpc AddTestCase(AddTestCaseRequest) returns (AddTestCaseResponse) {}
+  rpc GetTestCases(GetTestCasesRequest) returns (GetTestCasesResponse) {}
+  rpc GetTestCase(GetTestCaseRequest) returns (GetTestCaseResponse) {}
+  rpc UpdateTestCase(UpdateTestCaseRequest) returns (UpdateTestCaseResponse) {}
+  rpc RemoveTestCase(RemoveTestCaseRequest) returns (RemoveTestCaseResponse) {}
+}
+
+message Dataset {
+  string id = 1;
+  string name = 6;
+  string grader_id = 2;
+  string description = 3;
+  int32 memory_limit = 4;
+  google.protobuf.Duration time_limit = 5;
+}
+
+message TestCase {
+  string id = 4;
+  int32 number = 1;
+  string input_attachment_id = 2;
+  string output_attachment_id = 3;
+}
+
+message CreateRequest {
+  Dataset dataset = 1;
+}
+
+message CreateResponse {
+  string id = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  Dataset dataset = 1;
+}
+
+message GetRequest {
+  string name = 1;
+}
+
+message GetResponse {
+  Dataset dataset = 1;
+}
+
+message UpdateRequest {
+  string id = 1;
+  string description = 2;
+  string grader_id = 3;
+  string name = 4;
+  int32 memory_limit = 5;
+  google.protobuf.Duration time_limit = 6;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string grader_id = 3;
+  string description = 4;
+  string name = 5;
+}
+
+message SearchResponse {
+  repeated Dataset datasets = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}
+
+message AddTestCaseRequest {
+  string id = 1;
+  int32 number = 2;
+  bytes input = 3;
+  bytes output = 4;
+}
+
+message AddTestCaseResponse {
+}
+
+message GetTestCasesRequest {
+  string id = 1;
+}
+
+message GetTestCasesResponse {
+  repeated TestCase test_cases = 1;
+}
+
+message GetTestCaseRequest {
+  string id = 1;
+  int32 number = 2;
+}
+
+message GetTestCaseResponse {
+  TestCase test_case = 1;
+}
+
+message UpdateTestCaseRequest {
+  string id = 1;
+  int32 number = 2;
+  bytes input = 3;
+  bytes output = 4;
+}
+
+message UpdateTestCaseResponse {
+}
+
+message RemoveTestCaseRequest {
+  string id = 1;
+  int32 number = 2;
+}
+
+message RemoveTestCaseResponse {
+}

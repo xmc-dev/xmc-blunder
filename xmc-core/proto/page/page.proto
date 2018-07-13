@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package xmc.srv.core.page;
+
+option go_package = "page";
+
+import "google/protobuf/timestamp.proto";
+import "github.com/xmc-dev/xmc/xmc-core/proto/searchmeta/searchmeta.proto";
+
+service PageService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Get(GetRequest) returns (GetResponse) {}
+  rpc GetVersions(GetVersionsRequest) returns (GetVersionsResponse) {}
+  rpc GetFirstChildren(GetFirstChildrenRequest) returns (GetFirstChildrenResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message Version {
+  string page_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string attachment_id = 3;
+  string title = 4;
+}
+
+message Page {
+  string id = 1;
+  string path = 2;
+  google.protobuf.Timestamp latest_timestamp = 3;
+  Version version = 4;
+}
+
+message CreateRequest {
+  Page page = 1;
+  bytes contents = 2;
+  string title = 3;
+}
+
+message CreateResponse {
+  string id = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+}
+
+message ReadResponse {
+  Page page = 1;
+}
+
+message GetRequest {
+  string path = 1;
+}
+
+message GetResponse {
+  Page page = 1;
+}
+
+message GetVersionsRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string id = 3;
+}
+
+message GetVersionsResponse {
+  repeated Version versions = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}
+
+message GetFirstChildrenRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string id = 3;
+}
+
+message GetFirstChildrenResponse {
+  repeated Page pages = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}
+
+message UpdateRequest {
+  string id = 1;
+  string path = 2;
+  bytes contents = 3;
+  string title = 4;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+  bool hard = 2;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string path = 3;
+  string title = 4;
+}
+
+message SearchResponse {
+  repeated Page pages = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}

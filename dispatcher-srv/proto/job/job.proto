@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package xmc.srv.dispatcher.job;
+
+option go_package = "job";
+
+import "github.com/xmc-dev/xmc/xmc-core/proto/result/result.proto";
+import "google/protobuf/timestamp.proto";
+
+service JobsService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+
+  rpc Finish(FinishRequest) returns (FinishResponse) {}
+}
+
+enum State {
+  WAITING = 0;
+  PROCESSING = 1;
+  DONE = 2;
+}
+
+message StateValue {
+  State value = 1;
+}
+
+message Job {
+  string uuid = 1;
+  string dataset_id = 2;
+  bytes code = 3;
+  string language = 4;
+  string eval_id = 5;
+  xmc.srv.core.result.Result result = 6;
+  State state = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp finished_at = 9;
+  string submission_id = 10;
+  string task_id = 11;
+}
+
+message CreateRequest {
+  Job job = 1;
+  int32 priority = 2;
+}
+
+message CreateResponse {
+  string uuid = 1;
+}
+
+message ReadRequest {
+  string uuid = 1;
+}
+
+message ReadResponse {
+  Job job = 1;
+}
+
+message SearchRequest {
+  uint64 limit = 1;
+  uint64 offset = 2;
+  string task_id = 3;
+  string dataset_id = 4;
+  string language = 5;
+  string eval_id = 6;
+  StateValue state = 7;
+  string error_message = 8;
+}
+
+message SearchResponse {
+  repeated Job jobs = 1;
+}
+
+message FinishRequest {
+  string job_uuid = 1;
+  xmc.srv.core.result.Result result = 2;
+}
+
+message FinishResponse {
+  Job next_job = 1;
+}

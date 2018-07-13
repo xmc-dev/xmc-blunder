@@ -1,0 +1,6 @@
+[submodule "static/login"]
+	path = static/login
+	url = https://github.com/xmc-dev/login
+[submodule "static/consent"]
+	path = static/consent
+	url = https://github.com/xmc-dev/consent-page

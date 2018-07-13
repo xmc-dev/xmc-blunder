@@ -1,0 +1,3 @@
+#!/bin/sh
+
+xmc-import grader $GOPATH/src/github.com/xmc-dev/xmc-core/data/basic_grader.go

@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package xmc.srv.core.submission;
+
+option go_package = "submission";
+
+import "github.com/xmc-dev/xmc/xmc-core/proto/result/result.proto";
+import "github.com/xmc-dev/xmc/xmc-core/proto/searchmeta/searchmeta.proto";
+import "github.com/xmc-dev/xmc/xmc-core/proto/tsrange/tsrange.proto";
+import "github.com/xmc-dev/xmc/dispatcher-srv/proto/job/job.proto";
+import "google/protobuf/timestamp.proto";
+
+service SubmissionService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+enum State {
+  WAITING = 0;
+  PROCESSING = 1;
+  DONE = 2;
+}
+
+message StateValue {
+  State value = 1;
+}
+
+message Submission {
+  string id = 1;
+  string task_id = 2;
+  string dataset_id = 3;
+  string attachment_id = 4;
+  string eval_id = 5;
+  xmc.srv.core.result.Result result = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp finished_at = 8;
+  State state = 9;
+  string language = 10;
+  string build_command = 11;
+  string user_id = 12;
+}
+
+message CreateRequest {
+  string task_id = 1;
+  bytes code = 2;
+  string language = 3;
+}
+
+message CreateResponse {
+  string id = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+  bool include_result = 2;
+  bool include_test_results = 3;
+}
+
+message ReadResponse {
+  Submission submission = 1;
+}
+
+message UpdateRequest {
+  xmc.srv.dispatcher.job.Job job = 1;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string task_id = 3;
+  string dataset_id = 4;
+  string eval_id = 5;
+  StateValue state = 6;
+  string language = 7;
+  xmc.srv.core.tsrange.TimestampRange created_at = 8;
+  xmc.srv.core.tsrange.TimestampRange finished_at = 9;
+  string error_message = 10;
+  string compilation_message = 11;
+  bool include_result = 12;
+  bool include_test_results = 13;
+  string user_id = 14;
+}
+
+message SearchResponse {
+  repeated Submission submissions = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}

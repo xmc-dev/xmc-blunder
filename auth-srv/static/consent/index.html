@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Authorize {{.ClientName}}</title>
+	</head>
+
+	<body>
+		<h2>Authorize {{.ClientName}}</h2>
+
+		<h3>{{.ClientName}} by {{.OwnerClientID}}</h3>
+		<p>wants to access your <strong>{{.SubjectClientID}}</strong> account</p>
+
+		{{range .Scopes}}
+		<h3>{{.Title}}</h3>
+		<p>{{.Synopsis}}</p>
+		{{end}}
+
+		<form method="get" action="{{.Prefix}}/authorize">
+			<div style="display: none;">
+				<input type="text" name="response_type" value="{{.ResponseType}}" />
+				<input type="text" name="client_id" value="{{.ClientID}}" />
+				<input type="text" name="redirect_uri" value="{{.RedirectURI}}" />
+				<input type="text" name="state" value="{{.State}}" />
+				<input type="text" name="scope" value="{{.Scope}}" />
+				<input type="text" name="code_challenge" value="{{.CodeChallenge}}" />
+				<input type="text" name="code_challenge_method" value="{{.CodeChallengeMethod}}" />
+			</div>
+			<button name="authorize" value="1" type="submit">Authorize {{.SubjectClientID}}</button>
+		</form>
+
+		<p>
+			Authorizing will redirect to <br />
+			<strong>{{.RedirectURI}}</strong>
+		</p>
+	</body>
+</html>

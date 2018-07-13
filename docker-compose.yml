@@ -1,0 +1,157 @@
+version: "3"
+
+services:
+  consul:
+    image: consul
+    command: agent -server -bootstrap-expect=1 -log-level=warn -ui -client=0.0.0.0
+    hostname: consul
+    ports:
+      - 8500:8500
+    environment:
+      CONSUL_UI_BETA: 'true'
+
+  keys:
+    build: ./docker/keys
+    depends_on:
+      - consul
+    restart: on-failure
+
+  postgres:
+    build: ./docker/postgres
+    hostname: postgres
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis
+    hostname: redis
+    ports:
+      - 6379:6379
+
+  traefik:
+    image: traefik
+    hostname: traefik
+    ports:
+      - 80:80
+      - 8080:8080
+    depends_on:
+      - consul
+    volumes:
+      - ./docker/traefik.toml:/etc/traefik/traefik.toml:ro
+    restart: on-failure
+
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    hostname: minio
+    environment:
+      MINIO_ACCESS_KEY: devus
+      MINIO_SECRET_KEY: passpass
+    ports:
+      - 9000:9000
+
+  eval-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile.eval-srv
+    privileged: true
+    depends_on:
+      - consul
+      - auth-srv
+    environment:
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      CFG_TOKEN: http://traefik/oauth2/token
+    restart: on-failure
+
+  xmc-core:
+    build:
+      context: .
+      dockerfile: Dockerfile.xmc-core
+    depends_on:
+      - consul
+      - minio
+      - postgres
+      - auth-srv
+    environment:
+      CFG_DB_URL: postgres://dev:pass@postgres/core?sslmode=disable
+      CFG_S3_ENDPOINT: minio:9000
+      CFG_S3_ACCESS_KEY_ID: devus
+      CFG_S3_SECRET_ACCESS_KEY: passpass
+      CFG_S3_USE_SSL: 'false'
+      CFG_S3_BUCKET_NAME: xmc-core
+      CFG_TOKEN: http://traefik/oauth2/token
+      MICRO_REGISTRY_ADDRESS: consul:8500
+    restart: on-failure
+
+  account-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile.account-srv
+    depends_on:
+      - consul
+      - postgres
+    environment:
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      CFG_DB_URL: postgres://dev:pass@postgres/account?sslmode=disable
+    restart: on-failure
+
+
+  auth-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth-srv
+    depends_on:
+      - consul
+      - redis
+      - account-srv
+    environment:
+      CFG_DB_URL: redis:6379
+      MICRO_REGISTRY_ADDRESS: consul:8500
+    restart: on-failure
+
+  dispatcher-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile.dispatcher-srv
+    depends_on:
+      - consul
+      - postgres
+      - traefik
+      - auth-srv
+    environment:
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      CFG_DB_URL: postgres://dev:pass@postgres/dispatcher?sslmode=disable
+      CFG_TOKEN: http://traefik/oauth2/token
+    restart: on-failure
+
+  api-srv:
+    build:
+      context: .
+      dockerfile: Dockerfile.api-srv
+    hostname: api
+    depends_on:
+      - consul
+    environment:
+      MICRO_REGISTRY_ADDRESS: consul:8500
+    restart: on-failure
+
+  init:
+    build: ./docker/init
+    hostname: init
+    depends_on:
+      - consul
+      - keys
+      - xmc-core
+      - account-srv
+    environment:
+      MICRO_REGISTRY_ADDRESS: consul:8500
+    restart: on-failure
+
+  minioproxy:
+    build: ./docker/minioproxy
+    hostname: minioproxy
+    depends_on:
+      - minio
+    ports:
+      - 9001:9001
+    restart: on-failure

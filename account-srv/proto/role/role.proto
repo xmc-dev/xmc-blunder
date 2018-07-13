@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package xmc.srv.account.role;
+
+option go_package = "role";
+
+service RoleService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message Role {
+  string id = 1;
+  string name = 2;
+  string scope = 3;
+}
+
+message CreateRequest {
+  Role role = 1;
+}
+
+message CreateResponse {
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  Role role = 1;
+}
+
+message UpdateRequest {
+  string id = 1;
+  string name = 2;
+  string scope = 3;
+  string new_id = 4;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string id = 3;
+  string name = 4;
+  string scope = 5;
+}
+
+message SearchResponse {
+  repeated Role roles = 1;
+}

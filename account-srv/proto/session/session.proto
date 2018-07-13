@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package xmc.srv.account.session;
+
+import "github.com/xmc-dev/xmc/account-srv/proto/account/account.proto";
+
+option go_package = "session";
+
+service SessionsService {
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+}
+
+message Session {
+  string uuid = 1;
+  string client_id = 2;
+  int64 created_at = 3;
+  int64 expires_at = 4;
+}
+
+message LoginRequest {
+  string client_id = 1;
+  string client_secret = 2;
+  xmc.srv.account.account.TypeValue type = 3;
+}
+
+message LoginResponse {
+  Session session = 1;
+  bool credentials_ok = 2;
+}
+
+message ReadRequest {
+  string uuid = 1;
+}
+
+message ReadResponse {
+  Session session = 1;
+}
+
+message LogoutRequest {
+  string uuid = 1;
+}
+
+message LogoutResponse {
+}

@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package xmc.srv.core.attachment;
+
+option go_package = "attachment";
+
+import "github.com/xmc-dev/xmc/xmc-core/proto/searchmeta/searchmeta.proto";
+import "google/protobuf/timestamp.proto";
+
+service AttachmentService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc GetContents(GetContentsRequest) returns (GetContentsResponse) {}
+  rpc SetPublic(SetPublicRequest) returns (SetPublicResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message Attachment {
+  string id = 1;
+  string s3_object = 2;
+  string description = 3;
+  string object_id = 4;
+  string filename = 5;
+  int32 size = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  bool is_public = 9;
+}
+
+message CreateRequest {
+  Attachment attachment = 1;
+  bytes contents = 2;
+}
+
+message CreateResponse {
+  string id = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  Attachment attachment = 1;
+}
+
+message GetContentsRequest {
+  string id = 1;
+}
+
+message GetContentsResponse {
+  string url = 1;
+}
+
+message SetPublicRequest {
+  reserved 1;
+  string attachment_id = 2;
+  bool public = 3;
+}
+
+message SetPublicResponse {
+}
+
+message UpdateRequest {
+  string id = 1;
+  bytes contents = 2;
+  string description = 3;
+  string filename = 4;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 4;
+  uint32 offset = 5;
+  string description = 1;
+  string object_id = 2;
+  string filename = 3;
+}
+
+message SearchResponse {
+  repeated Attachment attachments = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}

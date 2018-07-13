@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package xmc.srv.eval.eval;
+
+import "github.com/xmc-dev/xmc/dispatcher-srv/proto/job/job.proto";
+
+option go_package = "eval";
+
+service EvalService {
+  rpc Assign(AssignRequest) returns (AssignResponse) {}
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {}
+  rpc SetDisabled(SetDisabledRequest) returns (SetDisabledResponse) {}
+}
+
+message NodeInfo {
+  string id = 4;
+  string name = 1;
+  string description = 2;
+  bool idle = 3;
+  string address = 5;
+  bool disabled = 6;
+}
+
+message AssignRequest {
+  xmc.srv.dispatcher.job.Job job = 1;
+}
+
+message AssignResponse {
+}
+
+message GetStatusRequest {
+}
+
+message GetStatusResponse {
+  NodeInfo info = 1;
+}
+
+message SetDisabledRequest {
+  bool disabled = 1;
+}
+
+message SetDisabledResponse {
+}

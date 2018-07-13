@@ -1,0 +1,5 @@
+[web]
+address = ":8080"
+
+[consulCatalog]
+endpoint = "consul:8500"

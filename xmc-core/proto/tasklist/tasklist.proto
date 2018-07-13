@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package xmc.srv.core.tasklist;
+
+option go_package = "tasklist";
+
+import "google/protobuf/wrappers.proto";
+import "github.com/xmc-dev/xmc/xmc-core/proto/tsrange/tsrange.proto";
+import "github.com/xmc-dev/xmc/xmc-core/proto/searchmeta/searchmeta.proto";
+
+service TaskListService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Get(GetRequest) returns (GetResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message TaskList {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  xmc.srv.core.tsrange.TimestampRange time_range = 4;
+  string page_id = 5;
+  string title = 6;
+}
+
+message CreateRequest {
+  TaskList task_list = 1;
+}
+
+message CreateResponse {
+  string id = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  TaskList task_list = 1;
+}
+
+message GetRequest {
+  string name = 1;
+}
+
+message GetResponse {
+  TaskList task_list = 1;
+}
+
+message UpdateRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  xmc.srv.core.tsrange.TimestampRange time_range = 4;
+  bool set_null_time = 5;
+  string title = 6;
+}
+
+message UpdateResponse {
+}
+
+message DeleteRequest {
+  string id = 1;
+  bool leave_tasks = 2;
+}
+
+message DeleteResponse {
+}
+
+message SearchRequest {
+  uint32 limit = 1;
+  uint32 offset = 2;
+  string name = 3;
+  string description = 4;
+  xmc.srv.core.tsrange.TimestampRange time_range = 5;
+  string title = 6;
+  google.protobuf.BoolValue is_permanent = 7;
+}
+
+message SearchResponse {
+  repeated TaskList task_lists = 1;
+  xmc.srv.core.searchmeta.Meta meta = 2;
+}

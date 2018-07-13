@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package xmc.srv.core.result;
+
+option go_package = "result";
+
+import "google/protobuf/duration.proto";
+
+message TestResult {
+  int32 test_no = 1;
+  string score = 2;
+  string grader_message = 3;
+  int32 memory = 4;
+  google.protobuf.Duration time = 5;
+}
+
+message Result {
+  string error_message = 1;
+  string compilation_message = 2;
+  repeated TestResult test_results = 3;
+  string score = 4;
+  string build_command = 5;
+}
