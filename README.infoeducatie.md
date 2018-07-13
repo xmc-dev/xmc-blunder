@@ -102,8 +102,9 @@ cd src
 ln -s config.dev.js config.js
 ```
 
+3. Inlocuieste valoarea `clientId` cu cea copiata la pasul 1.
 
-3. Apoi, executa `yarn dev`.
+4. Apoi, executa `yarn dev`.
 
 Pe sistemul host la http://localhost:8082 ar trebui sa apara interfata.
 
