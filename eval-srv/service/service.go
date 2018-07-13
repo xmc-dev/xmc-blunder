@@ -10,10 +10,10 @@ import (
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/registry"
+	"github.com/xmc-dev/registry"
 	"github.com/xmc-dev/xmc/common/config"
 	"github.com/xmc-dev/xmc/common/perms"
 	"github.com/xmc-dev/xmc/eval-srv/consts"
-	"github.com/xmc-dev/registry"
 )
 
 // Service represents the micro service along with its config options

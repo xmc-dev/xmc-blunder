@@ -7,10 +7,10 @@ import (
 	"github.com/micro/cli"
 	micro "github.com/micro/go-micro"
 	"github.com/micro/go-micro/registry"
+	xmcconsul "github.com/xmc-dev/registry"
 	"github.com/xmc-dev/xmc/common/config"
 	"github.com/xmc-dev/xmc/common/perms"
 	"github.com/xmc-dev/xmc/dispatcher-srv/consts"
-	xmcconsul "github.com/xmc-dev/registry"
 )
 
 type Service struct {

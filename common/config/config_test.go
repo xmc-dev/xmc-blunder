@@ -32,12 +32,10 @@ func startAgent(quit, started chan bool) {
 		time.Sleep(1 * time.Second)
 		started <- true
 
-		select {
-		case <-quit:
-			log.Print("Stopping consul")
-			if err := cmd.Process.Kill(); err != nil {
-				log.Fatal("Couldn't kill consul agent:", err)
-			}
+		<-quit
+		log.Print("Stopping consul")
+		if err := cmd.Process.Kill(); err != nil {
+			log.Fatal("Couldn't kill consul agent:", err)
 		}
 	}()
 }
@@ -71,12 +69,10 @@ func setupCleanup(q chan bool) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-		select {
-		case <-c:
-			q <- true
-			wg.Wait()
-			os.Exit(1)
-		}
+		<-c
+		q <- true
+		wg.Wait()
+		os.Exit(1)
 	}()
 }
 
@@ -88,9 +84,7 @@ func TestMain(m *testing.M) {
 	startAgent(q, s)
 
 	// wait for the agent to start
-	select {
-	case <-s:
-	}
+	<-s
 
 	Consul = initClient(false)
 

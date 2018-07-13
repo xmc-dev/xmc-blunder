@@ -4,10 +4,10 @@ import (
 	consul "github.com/hashicorp/consul/api"
 	"github.com/micro/cli"
 	micro "github.com/micro/go-micro"
+	"github.com/xmc-dev/registry"
 	"github.com/xmc-dev/xmc/account-srv/consts"
 	"github.com/xmc-dev/xmc/common/config"
 	"github.com/xmc-dev/xmc/common/perms"
-	"github.com/xmc-dev/registry"
 )
 
 // Service represents the micro service along with its config options

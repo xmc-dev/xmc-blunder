@@ -12,9 +12,9 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
+	"github.com/xmc-dev/gandalf"
 	"github.com/xmc-dev/xmc/account-srv/proto/account"
 	"github.com/xmc-dev/xmc/common/kv"
-	"github.com/xmc-dev/gandalf"
 )
 
 type ctxKey int

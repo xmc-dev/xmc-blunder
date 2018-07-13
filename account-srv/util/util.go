@@ -1,8 +1,8 @@
 package util
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"github.com/xmc-dev/xmc/account-srv/consts"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func HashSecret(password string) (string, error) {
@@ -12,4 +12,3 @@ func HashSecret(password string) (string, error) {
 	}
 	return string(h), nil
 }
-

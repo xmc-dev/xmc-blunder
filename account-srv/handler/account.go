@@ -98,6 +98,10 @@ func isNameValid(name string) bool {
 		isAllGraphic(name)
 }
 
+func isClientSecretValid(secret string) bool {
+	return len(secret) > 0 && len(secret) <= clientSecretLen
+}
+
 // Create creates an account
 func (acc *AccountsService) Create(ctx context.Context, req *account.CreateRequest, rsp *account.CreateResponse) error {
 	methodName := accSName("Create")
@@ -112,6 +116,8 @@ func (acc *AccountsService) Create(ctx context.Context, req *account.CreateReque
 		return errors.BadRequest(methodName, "invalid account")
 	case !isClientIDValid(a):
 		return errors.BadRequest(methodName, "invalid client_id")
+	case !isClientSecretValid(a.ClientSecret):
+		return errors.BadRequest(methodName, "invalid client_secret")
 	case !isNameValid(a.Name):
 		return errors.BadRequest(methodName, "invalid name")
 	case len(a.ClientSecret) == 0 && a.Type != account.Type_SERVICE:
@@ -154,7 +160,7 @@ func (acc *AccountsService) Create(ctx context.Context, req *account.CreateReque
 		if a.IsPublic {
 			a.ClientSecret = ""
 		} else {
-			a.ClientSecret = genClientSecret(64)
+			a.ClientSecret = genClientSecret(clientSecretLen)
 		}
 		rsp.ClientId = a.ClientId
 		rsp.ClientSecret = a.ClientSecret
@@ -335,11 +341,7 @@ func (acc *AccountsService) Delete(ctx context.Context, req *account.DeleteReque
 			}
 		}
 	}
-	err = delAccount(a.UUID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return delAccount(a.UUID)
 }
 
 // Search returns all accounts that match the query

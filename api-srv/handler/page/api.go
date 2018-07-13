@@ -120,7 +120,7 @@ func (h *Handler) queryEndpoint(c *gin.Context) {
 		Limit:  uint32(limit),
 		Offset: uint32(offset),
 		Path:   path,
-		Title: title,
+		Title:  title,
 	}
 	rsp, err := cl.Search(handler.C(c), req)
 	if err != nil {

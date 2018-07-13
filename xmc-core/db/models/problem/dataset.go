@@ -3,8 +3,8 @@ package problem
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/google/uuid"
 	pdataset "github.com/xmc-dev/xmc/xmc-core/proto/dataset"
 )
 

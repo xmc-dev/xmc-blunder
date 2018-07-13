@@ -20,8 +20,8 @@ import (
 	"github.com/xmc-dev/xmc/account-srv/proto/account"
 	e "github.com/xmc-dev/xmc/api-srv/errors"
 	"github.com/xmc-dev/xmc/api-srv/handler"
-	"github.com/xmc-dev/xmc/api-srv/util"
 	"github.com/xmc-dev/xmc/api-srv/handler/role"
+	"github.com/xmc-dev/xmc/api-srv/util"
 )
 
 type Handler struct {
@@ -51,7 +51,6 @@ func getUser(ctx context.Context, id string) (a *account.Account, err error) {
 
 	return
 }
-
 
 func getUserInfo(ctx context.Context, id string) (map[string]json.RawMessage, error) {
 	a, err := getUser(ctx, id)

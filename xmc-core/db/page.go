@@ -8,10 +8,6 @@ import (
 	ppage "github.com/xmc-dev/xmc/xmc-core/proto/page"
 )
 
-func (d *Datastore) updatePageChildren() {
-	d.db.Exec("SELECT xmc_page_children()")
-}
-
 func (d *Datastore) updateLastPageEventInternal() error {
 	return d.db.Exec("UPDATE internal SET last_page_event = ?", time.Now()).Error
 }

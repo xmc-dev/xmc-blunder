@@ -9,4 +9,3 @@ var srv *service.Service
 func InitHandler() {
 	srv = service.MainService
 }
-

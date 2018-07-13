@@ -13,6 +13,7 @@ import (
 	"github.com/micro/cli"
 	web "github.com/micro/go-web"
 	"github.com/urfave/negroni"
+	"github.com/xmc-dev/registry"
 	"github.com/xmc-dev/xmc/auth-srv/consts"
 	"github.com/xmc-dev/xmc/auth-srv/globals"
 	"github.com/xmc-dev/xmc/auth-srv/handlers/authorize"
@@ -21,7 +22,6 @@ import (
 	"github.com/xmc-dev/xmc/auth-srv/handlers/logout"
 	"github.com/xmc-dev/xmc/auth-srv/handlers/token"
 	"github.com/xmc-dev/xmc/common/config"
-	"github.com/xmc-dev/registry"
 )
 
 type Service struct {
