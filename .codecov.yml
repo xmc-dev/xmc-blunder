@@ -1,0 +1,9 @@
+ignore:
+  - account-srv
+  - api-srv
+  - auth-srv
+  - dispatcher-srv
+  - docker
+  - eval-srv
+  - vendor
+  - xmc-core
