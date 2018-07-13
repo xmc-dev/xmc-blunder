@@ -17,4 +17,7 @@ Ionescu][cirip].
 
 A full description of the XMC Project in English can be found on [our website][xmc].
 
-[xmc]: https://xmc-dev.github.io/
+[xmc]: https://xmc.fun/
+
+For the old git history before this repo, see this organization's xmc-core and
+*-srv repos. For the old history of this repo, see xmc-legacy.
