@@ -42,11 +42,11 @@ func (p *Page) ToProto() *ppage.Page {
 
 // Version represents a revision of a Page
 type Version struct {
-	PageID       uuid.UUID `gorm:"primary_key;type:uuid"`
-	AttachmentID uuid.UUID `gorm:"type:uuid"`
-	Title        string
-	Timestamp    time.Time `gorm:"primary_key"`
-	DeletedAt    *time.Time
+	PageID    uuid.UUID `gorm:"primary_key;type:uuid"`
+	Contents  string    `gorm:"type:text"`
+	Title     string
+	Timestamp time.Time `gorm:"primary_key"`
+	DeletedAt *time.Time
 }
 
 func (Version) TableName() string {
@@ -55,9 +55,9 @@ func (Version) TableName() string {
 
 func (v *Version) ToProto() *ppage.Version {
 	ver := &ppage.Version{
-		PageId:       v.PageID.String(),
-		AttachmentId: v.AttachmentID.String(),
-		Title:        v.Title,
+		PageId:   v.PageID.String(),
+		Contents: v.Contents,
+		Title:    v.Title,
 	}
 	ver.Timestamp, _ = ptypes.TimestampProto(v.Timestamp)
 

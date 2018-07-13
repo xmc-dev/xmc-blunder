@@ -521,6 +521,29 @@ func (d *Datastore) Migrate() error {
 				return tx.Model(&attachment.Attachment{}).DropColumn("is_public").Error
 			},
 		},
+		{
+			ID: "201807130015",
+			Migrate: func(tx *gorm.DB) error {
+				type PageVersion struct {
+					Contents string `gorm:"type:text"`
+				}
+				if err := tx.AutoMigrate(&PageVersion{}).Error; err != nil {
+					return err
+				}
+
+				return tx.Model(&PageVersion{}).DropColumn("attachment_id").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				type PageVersion struct {
+					AttachmentID uuid.UUID `gorm:"type:uuid"`
+				}
+				if err := tx.Model(&page.Version{}).DropColumn("contents").Error; err != nil {
+					return err
+				}
+
+				return tx.AutoMigrate(&PageVersion{}).Error
+			},
+		},
 	})
 	return errors.Wrap(m.Migrate(), "failed to migrate schema")
 }

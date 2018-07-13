@@ -21,8 +21,9 @@ service PageService {
 message Version {
   string page_id = 1;
   google.protobuf.Timestamp timestamp = 2;
-  string attachment_id = 3;
+  reserved 3;
   string title = 4;
+  string contents = 5;
 }
 
 message Page {
@@ -34,7 +35,7 @@ message Page {
 
 message CreateRequest {
   Page page = 1;
-  bytes contents = 2;
+  string contents = 2;
   string title = 3;
 }
 
@@ -84,7 +85,7 @@ message GetFirstChildrenResponse {
 message UpdateRequest {
   string id = 1;
   string path = 2;
-  bytes contents = 3;
+  string contents = 3;
   string title = 4;
 }
 

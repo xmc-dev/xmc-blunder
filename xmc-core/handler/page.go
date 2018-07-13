@@ -28,7 +28,7 @@ func pageSName(method string) string {
 func (*PageService) isUpdatePointless(pg *mpage.Page, v *mpage.Version, req *page.UpdateRequest) bool {
 	return (len(req.Title) == 0 || req.Title == v.Title) &&
 		(p(req.Path) == pg.Path) &&
-		(req.Contents == nil)
+		(len(req.Contents) == 0)
 }
 
 func p(p string) string {
@@ -44,7 +44,7 @@ func (ps *PageService) Create(ctx context.Context, req *page.CreateRequest, rsp 
 	switch {
 	case req.Page == nil:
 		return errors.BadRequest(methodName, "missing page")
-	case req.Contents == nil:
+	case len(req.Contents) == 0:
 		return errors.BadRequest(methodName, "invalid contents")
 	case len(req.Page.Path) == 0 || !isPathValid(req.Page.Path):
 		return errors.BadRequest(methodName, "invalid path")
@@ -211,7 +211,7 @@ func (ps *PageService) Update(ctx context.Context, req *page.UpdateRequest, rsp 
 	if len(title) == 0 {
 		title = v.Title
 	}
-	err = util.CreatePageVersion(dd, id, *t, req.Contents, title, v.AttachmentID)
+	err = util.CreatePageVersion(dd, id, *t, req.Contents, title)
 	if err != nil {
 		dd.Rollback()
 		return errors.InternalServerError(methodName, "couldn't create page version")

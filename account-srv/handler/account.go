@@ -98,8 +98,11 @@ func isNameValid(name string) bool {
 		isAllGraphic(name)
 }
 
-func isClientSecretValid(secret string) bool {
-	return len(secret) > 0 && len(secret) <= clientSecretLen
+func isClientSecretValid(acc *account.Account) bool {
+	if acc.Type == account.Type_SERVICE {
+		return true
+	}
+	return len(acc.ClientSecret) > 0 && len(acc.ClientSecret) <= clientSecretLen
 }
 
 // Create creates an account
@@ -116,7 +119,7 @@ func (acc *AccountsService) Create(ctx context.Context, req *account.CreateReque
 		return errors.BadRequest(methodName, "invalid account")
 	case !isClientIDValid(a):
 		return errors.BadRequest(methodName, "invalid client_id")
-	case !isClientSecretValid(a.ClientSecret):
+	case !isClientSecretValid(a):
 		return errors.BadRequest(methodName, "invalid client_secret")
 	case !isNameValid(a.Name):
 		return errors.BadRequest(methodName, "invalid name")
