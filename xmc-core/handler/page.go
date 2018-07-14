@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	"text/template"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/micro/go-micro/errors"
@@ -82,16 +84,37 @@ func (*PageService) Read(ctx context.Context, req *page.ReadRequest, rsp *page.R
 		t, _ := ptypes.Timestamp(req.Timestamp)
 		ts = &t
 	}
-	p, v, err := db.DB.ReadPage(id, ts)
+
+	dd := db.DB.BeginGroup()
+	p, v, err := dd.ReadPage(id, ts)
 	if err != nil {
+		dd.Rollback()
 		if err == db.ErrNotFound {
 			return errors.NotFound(methodName, "page or version not found")
 		}
 		return errors.InternalServerError(methodName, e(err))
 	}
-
 	rsp.Page = p.ToProto()
 	rsp.Page.Version = v.ToProto()
+
+	if !req.Raw {
+		c, err := util.RenderAsString(dd, p.Path)
+		if err != nil {
+			dd.Rollback()
+			switch err.(type) {
+			case template.ExecError:
+				return errors.BadRequest(methodName, "error in template: %+v", err)
+			default:
+				return errors.InternalServerError(methodName, err.Error())
+			}
+		}
+		rsp.Page.Version.Contents = c
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, err.Error())
+	}
+
 	return nil
 }
 
@@ -101,8 +124,10 @@ func (*PageService) Get(ctx context.Context, req *page.GetRequest, rsp *page.Get
 		return errors.BadRequest(methodName, "invalid path")
 	}
 
-	p, v, err := db.DB.GetPage(p(req.Path))
+	dd := db.DB.BeginGroup()
+	p, v, err := dd.GetPage(p(req.Path))
 	if err != nil {
+		dd.Rollback()
 		if err == db.ErrNotFound {
 			return errors.NotFound(methodName, "page or version not found")
 		}
@@ -111,6 +136,24 @@ func (*PageService) Get(ctx context.Context, req *page.GetRequest, rsp *page.Get
 
 	rsp.Page = p.ToProto()
 	rsp.Page.Version = v.ToProto()
+
+	if !req.Raw {
+		c, err := util.RenderAsString(dd, p.Path)
+		if err != nil {
+			dd.Rollback()
+			switch err.(type) {
+			case template.ExecError:
+				return errors.BadRequest(methodName, "error in template: %+v", err)
+			default:
+				return errors.InternalServerError(methodName, err.Error())
+			}
+		}
+		rsp.Page.Version.Contents = c
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, err.Error())
+	}
 	return nil
 }
 

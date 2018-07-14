@@ -1,9 +1,12 @@
 package util
 
 import (
+	"io"
 	"path"
 	"strings"
 	"time"
+
+	"text/template"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
@@ -55,4 +58,43 @@ func DeletePage(d *db.Datastore, id uuid.UUID, hard bool, log *logrus.Entry) err
 	}
 
 	return nil
+}
+
+type tmplDot struct {
+	d *db.Datastore
+}
+
+func tmplInclude(path string, d tmplDot) (string, error) {
+	b := &strings.Builder{}
+	err := RenderPage(d.d, path, b)
+	if err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
+}
+
+func RenderPage(d *db.Datastore, path string, w io.Writer) error {
+	_, v, err := d.GetPage(CleanPagePath(path))
+	if err != nil {
+		return err
+	}
+	t := template.New(path).Funcs(template.FuncMap{
+		"include": tmplInclude,
+	})
+	t, err = t.Parse(v.Contents)
+	if err != nil {
+		return err
+	}
+	return t.Execute(w, tmplDot{d: d})
+}
+
+func RenderAsString(d *db.Datastore, path string) (string, error) {
+	b := &strings.Builder{}
+	err := RenderPage(d, path, b)
+	if err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
 }

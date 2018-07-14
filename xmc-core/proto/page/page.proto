@@ -46,6 +46,7 @@ message CreateResponse {
 message ReadRequest {
   string id = 1;
   google.protobuf.Timestamp timestamp = 2;
+  bool raw = 3;
 }
 
 message ReadResponse {
@@ -54,6 +55,7 @@ message ReadResponse {
 
 message GetRequest {
   string path = 1;
+  bool raw = 2;
 }
 
 message GetResponse {

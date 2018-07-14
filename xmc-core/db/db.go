@@ -89,7 +89,7 @@ func (d *Datastore) NotEmpty(table string) (bool, error) {
 // for the implementation of a function.
 func (d *Datastore) begin() *Datastore {
 	if d.inTransaction {
-		panic("Transaction already in progress")
+		return d
 	}
 	dd := &Datastore{}
 	*dd = *d

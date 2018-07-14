@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/uuid"
@@ -27,7 +29,7 @@ type Handler struct {
 
 var cl = page.NewPageServiceClient("xmc.srv.core", client.DefaultClient)
 
-func getPage(ctx context.Context, id string, rest string, tstamp *time.Time) (p *page.Page, err error) {
+func getPage(ctx context.Context, id string, rest string, tstamp *time.Time, raw bool) (p *page.Page, err error) {
 	_, err = uuid.Parse(id)
 
 	if err == nil {
@@ -35,14 +37,14 @@ func getPage(ctx context.Context, id string, rest string, tstamp *time.Time) (p 
 		if tstamp != nil {
 			pt, _ = ptypes.TimestampProto(*tstamp)
 		}
-		req := &page.ReadRequest{Id: id, Timestamp: pt}
+		req := &page.ReadRequest{Id: id, Timestamp: pt, Raw: raw}
 		rsp := &page.ReadResponse{}
 		rsp, err = cl.Read(ctx, req)
 		if err == nil {
 			p = rsp.Page
 		}
 	} else {
-		req := &page.GetRequest{Path: "/" + id + rest}
+		req := &page.GetRequest{Path: "/" + id + rest, Raw: raw}
 		rsp := &page.GetResponse{}
 		rsp, err = cl.Get(ctx, req)
 		if err == nil {
@@ -89,6 +91,7 @@ func (h *Handler) createEndpoint(c *gin.Context) {
 func (h *Handler) readEndpoint(c *gin.Context) {
 	id := c.Param("id")
 	timestamp := c.Query("timestamp")
+	raw, _ := strconv.ParseBool(c.Query("raw"))
 	var t *time.Time
 	if len(timestamp) > 0 {
 		x, _ := time.Parse(time.RFC3339, timestamp)
@@ -98,7 +101,7 @@ func (h *Handler) readEndpoint(c *gin.Context) {
 		id = ""
 	}
 	rest := c.Param("rest")
-	p, err := getPage(handler.C(c), id, rest, t)
+	p, err := getPage(handler.C(c), id, rest, t, raw)
 	if err != nil {
 		me := merrors.Parse(err.Error())
 		e.Error(c, me, errors.Wrap(me, "couldn't read page"))
@@ -153,6 +156,7 @@ func (h *Handler) updateEndpoint(c *gin.Context) {
 		return
 	}
 	toUpdate.Id = id
+	fmt.Println("!!update ", toUpdate)
 	rsp, err := cl.Update(handler.C(c), toUpdate)
 	if err != nil {
 		me := merrors.Parse(err.Error())
