@@ -142,7 +142,7 @@ func (*PageService) Get(ctx context.Context, req *page.GetRequest, rsp *page.Get
 		if err != nil {
 			dd.Rollback()
 			switch err.(type) {
-			case template.ExecError:
+			case template.ExecError, util.XMCTemplateError:
 				return errors.BadRequest(methodName, "error in template: %+v", err)
 			default:
 				return errors.InternalServerError(methodName, err.Error())

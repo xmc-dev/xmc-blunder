@@ -18,11 +18,11 @@ import (
 type TaskService struct{}
 
 func taskPage(title string, id uuid.UUID) string {
-	return fmt.Sprintf(`<TaskHeader taskId="%s" />
+	return fmt.Sprintf(`{{macro "TaskHeader" "taskId=%s"}}
 
 # %s
 
-<TaskFooter taskId="%s" />`, id.String(), title, id.String())
+{{macro "TaskFooter" "taskId=%s"}}`, id.String(), title, id.String())
 }
 
 func taskSName(method string) string {
