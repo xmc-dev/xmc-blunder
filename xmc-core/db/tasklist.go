@@ -68,6 +68,9 @@ func (d *Datastore) UpdateTaskList(tl *ptasklist.UpdateRequest) error {
 		t.StartTime = &st
 		t.EndTime = &et
 	}
+	if tl.PublicSubmissions != nil {
+		t.PublicSubmissions = tl.PublicSubmissions.Value
+	}
 
 	if err := dd.db.Save(t).Error; err != nil {
 		dd.Rollback()
@@ -132,6 +135,9 @@ func (d *Datastore) SearchTaskList(req *ptasklist.SearchRequest) ([]*tasklist.Ta
 	}
 	if len(req.Title) > 0 {
 		query = query.Where("title ~* ?", req.Title)
+	}
+	if req.PublicSubmissions != nil {
+		query = query.Where("public_submissions = ?", req.PublicSubmissions.Value)
 	}
 	var cnt uint32
 	if err := query.Model(&ts).Count(&cnt).Error; err != nil {

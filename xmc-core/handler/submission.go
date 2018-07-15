@@ -13,6 +13,7 @@ import (
 	"github.com/xmc-dev/xmc/dispatcher-srv/proto/job"
 	"github.com/xmc-dev/xmc/xmc-core/common"
 	"github.com/xmc-dev/xmc/xmc-core/db"
+	msubmission "github.com/xmc-dev/xmc/xmc-core/db/models/submission"
 	"github.com/xmc-dev/xmc/xmc-core/db/models/tasklist"
 	"github.com/xmc-dev/xmc/xmc-core/proto/attachment"
 	"github.com/xmc-dev/xmc/xmc-core/proto/result"
@@ -35,6 +36,24 @@ func timeInRange(startTime, now, endTime time.Time) bool {
 
 func submissionSName(method string) string {
 	return fmt.Sprintf("%s.SubmissionService.%s", "xmc.srv.core", method)
+}
+
+func censorSubmission(s *submission.Submission) {
+	s.AttachmentId = ""
+	s.Censored = true
+	s.Result = nil
+}
+
+func submissionIsPublic(d *db.Datastore, s *msubmission.Submission) (bool, error) {
+	t, err := d.ReadTask(s.TaskID)
+	if err != nil {
+		return false, err
+	}
+	tl, err := d.ReadTaskList(t.TaskListID)
+	if err != nil {
+		return false, err
+	}
+	return tl.PublicSubmissions, nil
 }
 
 func sendToDispatcher(req *submission.CreateRequest, id, datasetID uuid.UUID, methodName string) error {
@@ -182,11 +201,18 @@ func (*SubmissionService) Read(ctx context.Context, req *submission.ReadRequest,
 	}
 
 	accID, err := perms.AccountUUIDFromContext(ctx)
+	censor := false
 	if !perms.HasScope(ctx, "manage/submission") && (err != nil || s.UserID != accID) {
-		dd.Rollback()
-		return errors.Forbidden(methodName, "you are not allowed to read this submission")
+		ok, err := submissionIsPublic(dd, s)
+		if err != nil {
+			dd.Rollback()
+			return errors.InternalServerError(methodName, err.Error())
+		}
+		if !ok {
+			censor = true
+		}
 	}
-	if req.IncludeTestResults {
+	if !censor && req.IncludeTestResults {
 		trs, err := dd.ReadTestResults(id)
 		if err != nil {
 			dd.Rollback()
@@ -198,7 +224,7 @@ func (*SubmissionService) Read(ctx context.Context, req *submission.ReadRequest,
 			}
 		}
 	}
-	if req.IncludeResult {
+	if !censor && req.IncludeResult {
 		r, err := dd.ReadSubmissionResult(id)
 		if err != nil && err != db.ErrNotFound {
 			dd.Rollback()
@@ -213,6 +239,9 @@ func (*SubmissionService) Read(ctx context.Context, req *submission.ReadRequest,
 		}
 	}
 	sub = s.ToProto(res)
+	if censor {
+		censorSubmission(sub)
+	}
 
 	if err := dd.Commit(); err != nil {
 		return errors.InternalServerError(methodName, e(err))
@@ -305,26 +334,8 @@ func (subService *SubmissionService) Search(ctx context.Context, req *submission
 		}
 	}
 
-	accID := uuid.Nil
-	if !perms.HasScope(ctx, "manage/submission") {
-		var err error
-		accID, err = perms.AccountUUIDFromContext(ctx)
-		if err != nil {
-			if err == perms.ErrMissingToken {
-				rsp.Submissions = []*submission.Submission{}
-				rsp.Meta = &searchmeta.Meta{
-					PerPage: req.Limit,
-					Count:   0,
-					Total:   0,
-				}
-				return nil
-			}
-			return errors.InternalServerError(methodName, e(err))
-		}
-	}
-
 	dd := db.DB.BeginGroup()
-	ss, cnt, err := dd.SearchSubmission(req, accID)
+	ss, cnt, err := dd.SearchSubmission(req)
 	if err != nil {
 		dd.Rollback()
 		return errors.InternalServerError(methodName, e(err))
@@ -332,9 +343,20 @@ func (subService *SubmissionService) Search(ctx context.Context, req *submission
 
 	subs := []*submission.Submission{}
 	for _, s := range ss {
+		// if we do not have the rights and the submission is not public then we censor it
+		var censor bool
+		var err error
+		if !perms.HasScope(ctx, "manage/submission") {
+			censor, err = submissionIsPublic(dd, s)
+			if err != nil {
+				dd.Rollback()
+				return errors.InternalServerError(methodName, err.Error())
+			}
+			censor = !censor
+		}
 		var r *result.Result
 		var ts []*result.TestResult
-		if req.IncludeTestResults {
+		if !censor && req.IncludeTestResults {
 			trs, err := dd.ReadTestResults(s.ID)
 			if err != nil {
 				dd.Rollback()
@@ -345,7 +367,7 @@ func (subService *SubmissionService) Search(ctx context.Context, req *submission
 				ts = append(ts, tr.ToProto())
 			}
 		}
-		if req.IncludeResult {
+		if !censor && req.IncludeResult {
 			res, err := dd.ReadSubmissionResult(s.ID)
 			if err != nil && err != db.ErrNotFound {
 				dd.Rollback()
@@ -360,6 +382,9 @@ func (subService *SubmissionService) Search(ctx context.Context, req *submission
 			}
 		}
 		sub := s.ToProto(r)
+		if censor {
+			censorSubmission(sub)
+		}
 		subs = append(subs, sub)
 	}
 

@@ -41,6 +41,7 @@ message Submission {
   string language = 10;
   string build_command = 11;
   string user_id = 12;
+  bool censored = 13;
 }
 
 message CreateRequest {

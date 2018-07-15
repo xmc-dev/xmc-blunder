@@ -544,6 +544,18 @@ func (d *Datastore) Migrate() error {
 				return tx.AutoMigrate(&PageVersion{}).Error
 			},
 		},
+		{
+			ID: "201807150015",
+			Migrate: func(tx *gorm.DB) error {
+				type TaskList struct {
+					PublicSubmissions bool
+				}
+				return tx.AutoMigrate(&TaskList{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Model(&tasklist.TaskList{}).DropColumn("public_submissions").Error
+			},
+		},
 	})
 	return errors.Wrap(m.Migrate(), "failed to migrate schema")
 }

@@ -12,13 +12,14 @@ import (
 // TaskList is a list of tasks with a wiki page. Users can solve the tasks
 // and get a rank.
 type TaskList struct {
-	ID          uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v1mc()"`
-	PageID      uuid.UUID `gorm:"type:uuid"`
-	StartTime   *time.Time
-	EndTime     *time.Time
-	Name        string
-	Description string
-	Title       string
+	ID                uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v1mc()"`
+	PageID            uuid.UUID `gorm:"type:uuid"`
+	StartTime         *time.Time
+	EndTime           *time.Time
+	Name              string
+	Description       string
+	Title             string
+	PublicSubmissions bool
 }
 
 func FromProto(tl *ptasklist.TaskList) *TaskList {
@@ -32,13 +33,14 @@ func FromProto(tl *ptasklist.TaskList) *TaskList {
 		endTime = &et
 	}
 	t := &TaskList{
-		ID:          id,
-		PageID:      pgID,
-		StartTime:   startTime,
-		EndTime:     endTime,
-		Name:        tl.Name,
-		Description: tl.Description,
-		Title:       tl.Title,
+		ID:                id,
+		PageID:            pgID,
+		StartTime:         startTime,
+		EndTime:           endTime,
+		Name:              tl.Name,
+		Description:       tl.Description,
+		Title:             tl.Title,
+		PublicSubmissions: tl.PublicSubmissions,
 	}
 
 	return t
@@ -46,11 +48,12 @@ func FromProto(tl *ptasklist.TaskList) *TaskList {
 
 func (t *TaskList) ToProto() *ptasklist.TaskList {
 	tl := &ptasklist.TaskList{
-		Id:          t.ID.String(),
-		Name:        t.Name,
-		Description: t.Description,
-		PageId:      t.PageID.String(),
-		Title:       t.Title,
+		Id:                t.ID.String(),
+		Name:              t.Name,
+		Description:       t.Description,
+		PageId:            t.PageID.String(),
+		Title:             t.Title,
+		PublicSubmissions: t.PublicSubmissions,
 	}
 	tl.TimeRange = &ptsrange.TimestampRange{}
 	if t.StartTime != nil && t.EndTime != nil {

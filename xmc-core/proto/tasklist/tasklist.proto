@@ -24,6 +24,7 @@ message TaskList {
   xmc.srv.core.tsrange.TimestampRange time_range = 4;
   string page_id = 5;
   string title = 6;
+  bool public_submissions = 7;
 }
 
 message CreateRequest {
@@ -57,6 +58,7 @@ message UpdateRequest {
   xmc.srv.core.tsrange.TimestampRange time_range = 4;
   bool set_null_time = 5;
   string title = 6;
+  google.protobuf.BoolValue public_submissions = 7;
 }
 
 message UpdateResponse {
@@ -78,6 +80,7 @@ message SearchRequest {
   xmc.srv.core.tsrange.TimestampRange time_range = 5;
   string title = 6;
   google.protobuf.BoolValue is_permanent = 7;
+  google.protobuf.BoolValue public_submissions = 8;
 }
 
 message SearchResponse {

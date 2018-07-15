@@ -112,7 +112,7 @@ func (d *Datastore) DeleteSubmission(id uuid.UUID) error {
 	return nil
 }
 
-func (d *Datastore) SearchSubmission(req *psubmission.SearchRequest, accID uuid.UUID) ([]*submission.Submission, uint32, error) {
+func (d *Datastore) SearchSubmission(req *psubmission.SearchRequest) ([]*submission.Submission, uint32, error) {
 	dd := d.begin()
 	ss := []*submission.Submission{}
 	query := dd.db.Joins("FULL OUTER JOIN submission_results on submissions.id = submission_results.submission_id")
@@ -131,9 +131,6 @@ func (d *Datastore) SearchSubmission(req *psubmission.SearchRequest, accID uuid.
 	}
 	if len(req.Language) > 0 {
 		query = query.Where("submissions.Language = ?", req.Language)
-	}
-	if accID != uuid.Nil {
-		query = query.Where("submissions.user_id = ?", accID)
 	}
 	if req.CreatedAt != nil {
 		createdAtBegin, _ := ptypes.Timestamp(req.CreatedAt.Begin)
