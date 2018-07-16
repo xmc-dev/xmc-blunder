@@ -142,10 +142,34 @@ func (d *Datastore) DeletePage(id uuid.UUID, hard bool) error {
 	return nil
 }
 
+func (d *Datastore) UndeletePage(id uuid.UUID) error {
+	dd := d.begin()
+	q := dd.db.Unscoped()
+	result := q.Model(&page.Page{}).Where("id = ?", id).Update("deleted_at", nil)
+	if err := result.Error; err != nil {
+		dd.Rollback()
+		return e(err, "couldn't undelete page")
+	}
+	if result.RowsAffected == 0 {
+		dd.Rollback()
+		return ErrNotFound
+	}
+	err := dd.updateLastPageEventInternal()
+	if err != nil {
+		dd.Rollback()
+		return e(err, "couldn't undelete page")
+	}
+	err = dd.Commit()
+	if err != nil {
+		return e(err, "couldn't undelete page")
+	}
+	return nil
+}
+
 func (d *Datastore) SearchPage(req *ppage.SearchRequest) ([]*page.Page, uint32, error) {
 	dd := d.begin()
 	ps := []*page.Page{}
-	query := dd.db.Order("created_at ASC")
+	query := dd.db.Order("created_at ASC").Unscoped()
 	if len(req.Path) > 0 {
 		query = query.Where("text(path) ~* ?", req.Path)
 	}

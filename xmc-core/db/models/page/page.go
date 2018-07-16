@@ -26,6 +26,10 @@ func FromProto(pg *ppage.Page) *Page {
 		Path: pg.Path,
 	}
 	p.LatestTimestamp, _ = ptypes.Timestamp(pg.LatestTimestamp)
+	if pg.DeletedAt != nil {
+		del, _ := ptypes.Timestamp(pg.DeletedAt)
+		p.DeletedAt = &del
+	}
 
 	return p
 }
@@ -36,6 +40,9 @@ func (p *Page) ToProto() *ppage.Page {
 		Path: "/" + strings.Replace(p.Path, ".", "/", -1),
 	}
 	pg.LatestTimestamp, _ = ptypes.TimestampProto(p.LatestTimestamp)
+	if p.DeletedAt != nil {
+		pg.DeletedAt, _ = ptypes.TimestampProto(*p.DeletedAt)
+	}
 
 	return pg
 }

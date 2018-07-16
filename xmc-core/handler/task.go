@@ -231,7 +231,7 @@ func (*TaskService) Delete(ctx context.Context, req *task.DeleteRequest, rsp *ta
 		}
 		return errors.InternalServerError(methodName, e(err))
 	}
-	err = util.DeletePage(dd, t.PageID, true, log)
+	err = util.DeletePage(dd, t.PageID, true)
 	// it shouldn't bail out if the page doesn't exist
 	if err != nil && err != db.ErrNotFound {
 		dd.Rollback()

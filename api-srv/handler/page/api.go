@@ -63,6 +63,8 @@ func (h *Handler) SetRouter(r *gin.RouterGroup) {
 	h.r.GET("/", h.queryEndpoint)
 	h.r.PATCH("/:id", h.updateEndpoint)
 	h.r.DELETE("/:id", h.deleteEndpoint)
+	h.r.PUT("/:id/delete", h.deleteEndpoint)
+	h.r.PUT("/:id/undelete", h.undeleteEndpoint)
 }
 
 func (h *Handler) createEndpoint(c *gin.Context) {
@@ -170,11 +172,27 @@ func (h *Handler) updateEndpoint(c *gin.Context) {
 
 func (h *Handler) deleteEndpoint(c *gin.Context) {
 	id := c.Param("id")
-	hard, _ := strconv.ParseBool(c.Query("hard"))
+	hard := true
+
+	// if we are on the other route
+	if c.Request.Method == "PUT" {
+		hard = false
+	}
 	_, err := cl.Delete(handler.C(c), &page.DeleteRequest{Id: id, Hard: hard})
 	if err != nil {
 		me := merrors.Parse(err.Error())
 		e.Error(c, me, errors.Wrap(me, "couldn't delete page"))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (h *Handler) undeleteEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	_, err := cl.Undelete(handler.C(c), &page.UndeleteRequest{Id: id})
+	if err != nil {
+		me := merrors.Parse(err.Error())
+		e.Error(c, me, errors.Wrap(me, "couldn't undelete page"))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{})

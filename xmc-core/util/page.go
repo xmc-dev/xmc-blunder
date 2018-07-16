@@ -11,7 +11,6 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/xmc-dev/xmc/xmc-core/db"
 	mpage "github.com/xmc-dev/xmc/xmc-core/db/models/page"
 	"github.com/xmc-dev/xmc/xmc-core/proto/page"
@@ -57,7 +56,7 @@ func CreatePage(d *db.Datastore, req *page.CreateRequest) (uuid.UUID, error) {
 	return id, nil
 }
 
-func DeletePage(d *db.Datastore, id uuid.UUID, hard bool, log *logrus.Entry) error {
+func DeletePage(d *db.Datastore, id uuid.UUID, hard bool) error {
 	// The versions themselves will be deleted by db.DB.DeletePage in a transaction.
 	err := d.DeletePage(id, hard)
 	if err != nil {

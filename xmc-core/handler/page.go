@@ -284,7 +284,7 @@ func (*PageService) Delete(ctx context.Context, req *page.DeleteRequest, rsp *pa
 	}
 
 	dd := db.DB.BeginGroup()
-	err = util.DeletePage(dd, id, req.Hard, log)
+	err = util.DeletePage(dd, id, req.Hard)
 	if err != nil {
 		dd.Rollback()
 		if err == db.ErrNotFound {
@@ -297,6 +297,25 @@ func (*PageService) Delete(ctx context.Context, req *page.DeleteRequest, rsp *pa
 
 	if err := dd.Commit(); err != nil {
 		return errors.InternalServerError(methodName, e(err))
+	}
+
+	return nil
+}
+
+func (*PageService) Undelete(ctx context.Context, req *page.UndeleteRequest, rsp *page.UndeleteResponse) error {
+	methodName := pageSName("Undelete")
+	id, err := uuid.Parse(req.Id)
+	if err != nil {
+		return errors.BadRequest(methodName, "invalid id")
+	}
+
+	if err := db.DB.UndeletePage(id); err != nil {
+		if err == db.ErrNotFound {
+			return errors.NotFound(methodName, "page not found")
+		} else if e, ok := err.(db.ErrHasDependants); ok {
+			return errors.BadRequest(methodName, "one or more "+string(e)+" depend on this page")
+		}
+		return errors.InternalServerError(methodName, err.Error())
 	}
 
 	return nil

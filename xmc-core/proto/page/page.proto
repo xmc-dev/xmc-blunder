@@ -15,6 +15,7 @@ service PageService {
   rpc GetFirstChildren(GetFirstChildrenRequest) returns (GetFirstChildrenResponse) {}
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Undelete(UndeleteRequest) returns (UndeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
 }
 
@@ -31,6 +32,7 @@ message Page {
   string path = 2;
   google.protobuf.Timestamp latest_timestamp = 3;
   Version version = 4;
+  google.protobuf.Timestamp deleted_at = 5;
 }
 
 message CreateRequest {
@@ -100,6 +102,13 @@ message DeleteRequest {
 }
 
 message DeleteResponse {
+}
+
+message UndeleteRequest {
+  string id = 1;
+}
+
+message UndeleteResponse {
 }
 
 message SearchRequest {

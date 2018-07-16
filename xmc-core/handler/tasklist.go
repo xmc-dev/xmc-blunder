@@ -183,7 +183,7 @@ func (*TaskListService) Delete(ctx context.Context, req *tasklist.DeleteRequest,
 		}
 		return errors.InternalServerError(methodName, err.Error())
 	}
-	err = util.DeletePage(dd, tl.PageID, true, log)
+	err = util.DeletePage(dd, tl.PageID, true)
 	if err != nil && err != db.ErrNotFound {
 		dd.Rollback()
 		return errors.InternalServerError(methodName, err.Error())
