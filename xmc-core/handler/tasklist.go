@@ -23,6 +23,12 @@ func tasklistSName(method string) string {
 	return fmt.Sprintf("%s.TaskListService.%s", "xmc.srv.core", method)
 }
 
+func taskListPage(title string, id uuid.UUID) string {
+	return fmt.Sprintf(`# %s
+
+{{macro "TaskList" "taskListId=%s"}}`, strings.Title(title), id.String())
+}
+
 func validateTimeRange(methodName string, timeRange *tsrange.TimestampRange) error {
 	if timeRange == nil {
 		return nil
@@ -70,7 +76,7 @@ func (*TaskListService) Create(ctx context.Context, req *tasklist.CreateRequest,
 	path := "/" + req.TaskList.Name
 	pageID, err := util.CreatePage(dd, &page.CreateRequest{
 		Page:     &page.Page{Path: path},
-		Contents: "Task list " + req.TaskList.Name,
+		Contents: taskListPage(req.TaskList.Title, id),
 		Title:    req.TaskList.Title,
 	})
 	if err != nil {

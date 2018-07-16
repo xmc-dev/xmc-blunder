@@ -22,7 +22,7 @@ func taskPage(title string, id uuid.UUID) string {
 
 # %s
 
-{{macro "TaskFooter" "taskId=%s"}}`, id.String(), title, id.String())
+{{macro "TaskFooter" "taskId=%s"}}`, id.String(), strings.Title(title), id.String())
 }
 
 func taskSName(method string) string {

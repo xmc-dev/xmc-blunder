@@ -85,6 +85,7 @@ func (h *Handler) queryEndpoint(c *gin.Context) {
 	name := c.Query("name")
 	description := c.Query("description")
 	title := c.Query("title")
+	taskListID := c.Query("taskListId")
 
 	req := &task.SearchRequest{
 		Limit:       uint32(limit),
@@ -93,6 +94,7 @@ func (h *Handler) queryEndpoint(c *gin.Context) {
 		Name:        name,
 		Description: description,
 		Title:       title,
+		TaskListId:  taskListID,
 	}
 	rsp, err := cl.Search(handler.C(c), req)
 	if err != nil {
