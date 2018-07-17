@@ -216,6 +216,10 @@ func (*PageService) GetFirstChildren(ctx context.Context, req *page.GetFirstChil
 		pages = append(pages, pp)
 	}
 
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+
 	rsp.Pages = pages
 	rsp.Meta = &searchmeta.Meta{
 		PerPage: req.Limit,
