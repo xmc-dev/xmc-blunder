@@ -45,7 +45,7 @@ func (h *ChildrenHandler) queryEndpoint(c *gin.Context) {
 	}
 	meta := util.Marshal(rsp.Meta)
 	c.JSON(http.StatusOK, gin.H{
-		"meta":     meta,
-		"versions": mv,
+		"meta":  meta,
+		"pages": mv,
 	})
 }

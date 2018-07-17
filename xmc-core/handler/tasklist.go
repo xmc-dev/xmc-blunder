@@ -29,6 +29,16 @@ func taskListPage(title string, id uuid.UUID) string {
 {{macro "TaskList" "taskListId=%s"}}`, strings.Title(title), id.String())
 }
 
+func addPath(d *db.Datastore, tl *tasklist.TaskList) error {
+	u, _ := uuid.Parse(tl.PageId)
+	p, _, err := d.ReadPage(u, nil)
+	if err != nil {
+		return err
+	}
+	tl.Path = util.DirtyPagePath(p.Path)
+	return nil
+}
+
 func validateTimeRange(methodName string, timeRange *tsrange.TimestampRange) error {
 	if timeRange == nil {
 		return nil
@@ -106,14 +116,25 @@ func (*TaskListService) Read(ctx context.Context, req *tasklist.ReadRequest, rsp
 		return errors.BadRequest(methodName, "invalid id")
 	}
 
-	t, err := db.DB.ReadTaskList(id)
+	dd := db.DB.BeginGroup()
+	t, err := dd.ReadTaskList(id)
 	if err != nil {
+		dd.Rollback()
 		if err == db.ErrNotFound {
 			return errors.NotFound(methodName, "task list not found")
 		}
 		return errors.InternalServerError(methodName, e(err))
 	}
-	rsp.TaskList = t.ToProto()
+	tt := t.ToProto()
+	if err := addPath(dd, tt); err != nil {
+		dd.Rollback()
+		return errors.InternalServerError(methodName, e(err))
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+	rsp.TaskList = tt
 
 	return nil
 }
@@ -125,15 +146,25 @@ func (*TaskListService) Get(ctx context.Context, req *tasklist.GetRequest, rsp *
 	}
 	req.Name = strings.ToLower(req.Name)
 
-	t, err := db.DB.GetTaskList(req.Name)
+	dd := db.DB.BeginGroup()
+	t, err := dd.GetTaskList(req.Name)
 	if err != nil {
+		dd.Rollback()
 		if err == db.ErrNotFound {
 			return errors.NotFound(methodName, "task list not found")
 		}
 		return errors.InternalServerError(methodName, e(err))
 	}
+	tt := t.ToProto()
+	if err := addPath(dd, tt); err != nil {
+		dd.Rollback()
+		return errors.InternalServerError(methodName, e(err))
+	}
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
 
-	rsp.TaskList = t.ToProto()
+	rsp.TaskList = tt
 	return nil
 }
 
@@ -205,13 +236,23 @@ func (*TaskListService) Search(ctx context.Context, req *tasklist.SearchRequest,
 		req.Limit = 250
 	}
 
-	ts, total, err := db.DB.SearchTaskList(req)
+	dd := db.DB.BeginGroup()
+	ts, total, err := dd.SearchTaskList(req)
 	if err != nil {
+		dd.Rollback()
 		return errors.InternalServerError(methodName, e(err))
 	}
 	tls := []*tasklist.TaskList{}
 	for _, t := range ts {
-		tls = append(tls, t.ToProto())
+		tt := t.ToProto()
+		if err := addPath(dd, tt); err != nil {
+			dd.Rollback()
+			return errors.InternalServerError(methodName, e(err))
+		}
+		tls = append(tls, tt)
+	}
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
 	}
 
 	rsp.TaskLists = tls

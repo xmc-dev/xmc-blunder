@@ -195,16 +195,25 @@ func (*PageService) GetFirstChildren(ctx context.Context, req *page.GetFirstChil
 	} else if req.Limit > 250 {
 		req.Limit = 250
 	}
-	if len(req.Id) == 0 {
+	if _, err := uuid.Parse(req.Id); err != nil {
 		return errors.BadRequest(methodName, "invalid id")
 	}
-	ps, total, err := db.DB.GetFirstPageChildren(req)
+	dd := db.DB.BeginGroup()
+	ps, total, err := dd.GetFirstPageChildren(req)
 	if err != nil {
+		dd.Rollback()
 		return errors.InternalServerError(methodName, e(err))
 	}
 	pages := []*page.Page{}
 	for _, p := range ps {
-		pages = append(pages, p.ToProto())
+		v, err := dd.ReadPageVersion(p.ID, nil)
+		if err != nil {
+			dd.Rollback()
+			return errors.InternalServerError(methodName, e(err))
+		}
+		pp := p.ToProto()
+		pp.Version = v.ToProto()
+		pages = append(pages, pp)
 	}
 
 	rsp.Pages = pages
@@ -333,13 +342,26 @@ func (*PageService) Search(ctx context.Context, req *page.SearchRequest, rsp *pa
 	if len(req.Path) > 0 {
 		req.Path = util.CleanPagePath(req.Path)
 	}
-	ps, total, err := db.DB.SearchPage(req)
+	dd := db.DB.BeginGroup()
+	ps, total, err := dd.SearchPage(req)
 	if err != nil {
+		dd.Rollback()
 		return errors.InternalServerError(methodName, e(err))
 	}
 	pages := []*page.Page{}
 	for _, p := range ps {
-		pages = append(pages, p.ToProto())
+		v, err := dd.ReadPageVersion(p.ID, nil)
+		if err != nil {
+			dd.Rollback()
+			return errors.InternalServerError(methodName, e(err))
+		}
+		pp := p.ToProto()
+		pp.Version = v.ToProto()
+		pages = append(pages, pp)
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
 	}
 
 	rsp.Pages = pages

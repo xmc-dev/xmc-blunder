@@ -37,7 +37,7 @@ func (d *Datastore) CreatePageVersion(ver *page.Version) error {
 	return e(d.db.Create(ver).Error, "couldn't create page version")
 }
 
-func (d *Datastore) readPageVersion(pageID uuid.UUID, timestamp *time.Time) (*page.Version, error) {
+func (d *Datastore) ReadPageVersion(pageID uuid.UUID, timestamp *time.Time) (*page.Version, error) {
 	query := d.db
 	if timestamp != nil {
 		query = query.Where("timestamp = ?", *timestamp)
@@ -58,7 +58,7 @@ func (d *Datastore) ReadPage(id uuid.UUID, timestamp *time.Time) (*page.Page, *p
 		return nil, nil, e(err, "couldn't read page")
 	}
 
-	v, err := dd.readPageVersion(id, timestamp)
+	v, err := dd.ReadPageVersion(id, timestamp)
 	if err != nil {
 		dd.Rollback()
 		return nil, nil, err
@@ -76,7 +76,7 @@ func (d *Datastore) GetPage(path string) (*page.Page, *page.Version, error) {
 		return nil, nil, e(err, "couldn't get page")
 	}
 
-	v, err := dd.readPageVersion(p.ID, nil)
+	v, err := dd.ReadPageVersion(p.ID, nil)
 	if err != nil {
 		dd.Rollback()
 		return nil, nil, err

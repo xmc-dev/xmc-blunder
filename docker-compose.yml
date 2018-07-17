@@ -81,6 +81,7 @@ services:
       CFG_S3_BUCKET_NAME: xmc-core
       CFG_TOKEN: http://traefik/oauth2/token
       MICRO_REGISTRY_ADDRESS: consul:8500
+      DEBUG: 'true'
     restart: on-failure
 
   account-srv:

@@ -55,7 +55,7 @@ func main() {
 	register("/graders", &grader.Handler{})
 	register("/pages", &page.Handler{})
 	register("/pageversions", &page.VersionHandler{})
-	register("pagechildren", &page.ChildrenHandler{})
+	register("/pagechildren", &page.ChildrenHandler{})
 	register("/accounts", &account.Handler{})
 	register("/tasklists", &tasklist.Handler{})
 	register("/roles", &role.Handler{})

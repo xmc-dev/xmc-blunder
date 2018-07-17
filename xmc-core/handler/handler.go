@@ -13,6 +13,7 @@ import (
 var log = logrus.WithField("prefix", "handler")
 
 func e(err error) string {
+	logrus.WithError(err).Debug("e called")
 	return fmt.Sprintf("%+v", err)
 }
 

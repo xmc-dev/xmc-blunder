@@ -25,6 +25,7 @@ message TaskList {
   string page_id = 5;
   string title = 6;
   bool public_submissions = 7;
+  string path = 8;
 }
 
 message CreateRequest {
