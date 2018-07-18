@@ -19,16 +19,16 @@ func (d *Datastore) CreatePage(pg *ppage.Page) (uuid.UUID, time.Time, error) {
 	err := dd.db.Create(p).Error
 	if err != nil {
 		dd.Rollback()
-		e(err, "couldn't create page")
+		return uuid.Nil, time.Time{}, e(err, "couldn't create page")
 	}
 	err = dd.updateLastPageEventInternal()
 	if err != nil {
 		dd.Rollback()
-		e(err, "couldn't create page")
+		return uuid.Nil, time.Time{}, e(err, "couldn't create page")
 	}
 	err = dd.Commit()
 	if err != nil {
-		e(err, "couldn't create page")
+		return uuid.Nil, time.Time{}, e(err, "couldn't create page")
 	}
 	return p.ID, p.CreatedAt, nil
 }
