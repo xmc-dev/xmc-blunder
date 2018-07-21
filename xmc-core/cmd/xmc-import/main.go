@@ -55,6 +55,15 @@ func importTask() importer.Spec {
 	return ts
 }
 
+func importTaskList() importer.Spec {
+	tli := xmc.NewTaskListImporter()
+	tls, err := tli.ReadTaskList(fp)
+	if err != nil {
+		log.Fatalf("Error while reading task list: %v", err)
+	}
+	return tls
+}
+
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 2 {
@@ -70,6 +79,8 @@ func main() {
 		f = importDataset
 	case "task":
 		f = importTask
+	case "tasklist":
+		f = importTaskList
 	default:
 		fmt.Fprintln(os.Stderr, "unsupported object type")
 		os.Exit(1)

@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"time"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/micro/go-micro/errors"
+	"github.com/xmc-dev/xmc/common/perms"
 	"github.com/xmc-dev/xmc/xmc-core/db"
 	mtasklist "github.com/xmc-dev/xmc/xmc-core/db/models/tasklist"
 	"github.com/xmc-dev/xmc/xmc-core/proto/page"
@@ -26,7 +29,8 @@ func tasklistSName(method string) string {
 func taskListPage(title string, id uuid.UUID) string {
 	return fmt.Sprintf(`# %s
 
-{{macro "TaskList" "taskListId=%s"}}`, strings.Title(title), id.String())
+{{macro "TaskListHeader" "taskListId=%s"}}
+{{macro "TaskList" "taskListId=%s"}}`, strings.Title(title), id.String(), id.String())
 }
 
 func addPath(d *db.Datastore, tl *tasklist.TaskList) error {
@@ -261,5 +265,122 @@ func (*TaskListService) Search(ctx context.Context, req *tasklist.SearchRequest,
 		Count:   uint32(len(tls)),
 		Total:   total,
 	}
+	return nil
+}
+
+func (*TaskListService) Participate(ctx context.Context, req *tasklist.ParticipateRequest, rsp *tasklist.ParticipateResponse) error {
+	methodName := tasklistSName("Participate")
+
+	taskListID, err := uuid.Parse(req.TaskListId)
+	if err != nil {
+		return errors.BadRequest(methodName, "invalid task_list_id")
+	}
+	userID, err := perms.AccountUUIDFromContext(ctx)
+	if err == perms.ErrMissingToken {
+		return errors.Forbidden(methodName, "you must be logged in to participate")
+	} else if err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+
+	dd := db.DB.BeginGroup()
+	tl, err := dd.ReadTaskList(taskListID)
+	if err != nil {
+		dd.Rollback()
+		if err == db.ErrNotFound {
+			return errors.NotFound(methodName, "task list not found")
+		}
+		return errors.InternalServerError(methodName, e(err))
+	}
+	if !tl.WithParticipations {
+		dd.Rollback()
+		return errors.BadRequest(methodName, "task list is without participations")
+	}
+	if tl.StartTime != nil {
+		if !time.Now().Before(*tl.StartTime) {
+			dd.Rollback()
+			return errors.BadRequest(methodName, "task list participation must be before start time")
+		}
+	}
+
+	if err := db.DB.CreateParticipation(taskListID, userID); err != nil {
+		dd.Rollback()
+		if err == db.ErrNotFound {
+			return errors.NotFound(methodName, "task list not found")
+		}
+		return errors.InternalServerError(methodName, err.Error())
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+	return nil
+}
+
+func (*TaskListService) CancelParticipation(ctx context.Context, req *tasklist.CancelParticipationRequest, rsp *tasklist.CancelParticipationResponse) error {
+	methodName := tasklistSName("CancelParticipation")
+
+	taskListID, err := uuid.Parse(req.TaskListId)
+	if err != nil {
+		return errors.BadRequest(methodName, "invalid task_list_id")
+	}
+	userID, err := perms.AccountUUIDFromContext(ctx)
+	if err == perms.ErrMissingToken {
+		return errors.Forbidden(methodName, "you must be logged in to participate")
+	} else if err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+
+	dd := db.DB.BeginGroup()
+	tl, err := dd.ReadTaskList(taskListID)
+	if err != nil {
+		dd.Rollback()
+		if err == db.ErrNotFound {
+			return errors.NotFound(methodName, "task list not found")
+		}
+		return errors.InternalServerError(methodName, e(err))
+	}
+
+	if !tl.WithParticipations {
+		dd.Rollback()
+		return errors.BadRequest(methodName, "task list is without participations")
+	}
+	if tl.StartTime != nil && !time.Now().Before(*tl.StartTime) {
+		dd.Rollback()
+		return errors.BadRequest(methodName, "task list participation cancel must be made before start time")
+	}
+
+	if err := db.DB.CancelParticipation(taskListID, userID); err != nil {
+		dd.Rollback()
+		if err == db.ErrNotFound {
+			return nil
+		}
+		return errors.InternalServerError(methodName, e(err))
+	}
+
+	if err := dd.Commit(); err != nil {
+		return errors.InternalServerError(methodName, e(err))
+	}
+	return nil
+}
+
+func (*TaskListService) GetParticipants(ctx context.Context, req *tasklist.GetParticipantsRequest, rsp *tasklist.GetParticipantsResponse) error {
+	methodName := tasklistSName("GetParticipants")
+
+	taskListID, err := uuid.Parse(req.TaskListId)
+	if err != nil {
+		return errors.BadRequest(methodName, "invalid task_list_id")
+	}
+	parts, err := db.DB.GetTaskListParticipants(taskListID)
+	if err != nil {
+		if err == db.ErrNotFound {
+			return errors.NotFound(methodName, "task list not found")
+		}
+		return errors.InternalServerError(methodName, e(err))
+	}
+	rsp.UserIds = []string{}
+	for _, p := range parts {
+		rsp.UserIds = append(rsp.UserIds, p.UserID.String())
+	}
+
 	return nil
 }

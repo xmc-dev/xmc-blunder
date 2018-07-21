@@ -11,7 +11,7 @@ import (
 	"github.com/xmc-dev/xmc/xmc-core/proto/tasklist"
 )
 
-// TaskSpec is a generic represenatation of the soon-to-be-imported Task
+// TaskSpec is a generic representation of the soon-to-be-imported Task
 type TaskSpec struct {
 	Name         string
 	DatasetName  string

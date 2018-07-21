@@ -71,6 +71,9 @@ func (d *Datastore) UpdateTaskList(tl *ptasklist.UpdateRequest) error {
 	if tl.PublicSubmissions != nil {
 		t.PublicSubmissions = tl.PublicSubmissions.Value
 	}
+	if tl.WithParticipations != nil {
+		t.WithParticipations = tl.WithParticipations.Value
+	}
 
 	if err := dd.db.Save(t).Error; err != nil {
 		dd.Rollback()
@@ -139,6 +142,9 @@ func (d *Datastore) SearchTaskList(req *ptasklist.SearchRequest) ([]*tasklist.Ta
 	if req.PublicSubmissions != nil {
 		query = query.Where("public_submissions = ?", req.PublicSubmissions.Value)
 	}
+	if req.WithParticipations != nil {
+		query = query.Where("with_participations = ?", req.WithParticipations.Value)
+	}
 	var cnt uint32
 	if err := query.Model(&ts).Count(&cnt).Error; err != nil {
 		dd.Rollback()
@@ -153,4 +159,40 @@ func (d *Datastore) SearchTaskList(req *ptasklist.SearchRequest) ([]*tasklist.Ta
 	err := dd.Commit()
 
 	return ts, cnt, e(err, "couldn't search task lists")
+}
+
+func (d *Datastore) CreateParticipation(taskListID, userID uuid.UUID) error {
+	p := &tasklist.Participation{
+		TaskListID: taskListID,
+		UserID:     userID,
+	}
+
+	err := d.db.FirstOrCreate(p, p).Error
+	return e(err, "couldn't create participation")
+}
+
+func (d *Datastore) CancelParticipation(taskListID, userID uuid.UUID) error {
+	p := &tasklist.Participation{}
+	dd := d.begin()
+	err := dd.db.Where("task_list_id = ? AND user_id = ?", taskListID, userID).First(p).Error
+	if err != nil {
+		dd.Rollback()
+		return e(err, "couldn't cancel participation")
+	}
+	if err := dd.db.Delete(p).Error; err != nil {
+		dd.Rollback()
+		return e(err, "couldn't cancel participation")
+	}
+
+	return e(dd.Commit(), "couldn't cancel participation")
+}
+
+func (d *Datastore) GetTaskListParticipants(taskListID uuid.UUID) ([]*tasklist.Participation, error) {
+	var ps []*tasklist.Participation
+	err := d.db.Find(&ps, "task_list_id = ?", taskListID).Error
+	if err != nil {
+		return nil, e(err, "couldn't get task list participants")
+	}
+
+	return ps, nil
 }

@@ -56,6 +56,9 @@ func (h *Handler) SetRouter(r *gin.RouterGroup) {
 	h.r.GET("/:id", h.readEndpoint)
 	h.r.PATCH("/:id", h.updateEndpoint)
 	h.r.DELETE("/:id", h.deleteEndpoint)
+	h.r.GET("/:id/participate", h.participateEndpoint)
+	h.r.GET("/:id/cancelparticipation", h.cancelParticipationEndpoint)
+	h.r.GET("/:id/participants", h.participantsEndpoint)
 }
 
 func (h *Handler) createEndpoint(c *gin.Context) {
@@ -178,4 +181,41 @@ func (h *Handler) deleteEndpoint(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (*Handler) participateEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	_, err := cl.Participate(handler.C(c), &tasklist.ParticipateRequest{
+		TaskListId: id,
+	})
+	if err != nil {
+		me := merrors.Parse(err.Error())
+		e.Error(c, me, errors.Wrap(me, "couldn't participate to task list"))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (*Handler) cancelParticipationEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	_, err := cl.CancelParticipation(handler.C(c), &tasklist.CancelParticipationRequest{
+		TaskListId: id,
+	})
+	if err != nil {
+		me := merrors.Parse(err.Error())
+		e.Error(c, me, errors.Wrap(me, "couldn't participate to task list"))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (*Handler) participantsEndpoint(c *gin.Context) {
+	id := c.Param("id")
+	rsp, err := cl.GetParticipants(handler.C(c), &tasklist.GetParticipantsRequest{TaskListId: id})
+	if err != nil {
+		me := merrors.Parse(err.Error())
+		e.Error(c, me, errors.Wrap(me, "couldn't get task list participants"))
+		return
+	}
+	c.JSON(http.StatusOK, util.Marshal(rsp))
 }

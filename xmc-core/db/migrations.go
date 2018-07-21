@@ -556,6 +556,33 @@ func (d *Datastore) Migrate() error {
 				return tx.Model(&tasklist.TaskList{}).DropColumn("public_submissions").Error
 			},
 		},
+		{
+			ID: "201807200015",
+			Migrate: func(tx *gorm.DB) error {
+				type TaskList struct {
+					WithParticipations bool
+				}
+				type Participation struct {
+					TaskListID uuid.UUID `gorm:"primary_key;type:uuid"`
+					UserID     uuid.UUID `gorm:"primary_key"`
+				}
+				if err := tx.AutoMigrate(&TaskList{}).AutoMigrate(&Participation{}).Error; err != nil {
+					return err
+				}
+
+				err := tx.Model(&Participation{}).
+					AddForeignKey("task_list_id", "task_lists(id)", "CASCADE", "CASCADE").
+					Error
+				return err
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Model(&tasklist.TaskList{}).DropColumn("with_participations").Error; err != nil {
+					return err
+				}
+
+				return tx.DropTable(&tasklist.Participation{}).Error
+			},
+		},
 	})
 	return errors.Wrap(m.Migrate(), "failed to migrate schema")
 }

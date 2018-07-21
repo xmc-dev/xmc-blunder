@@ -15,6 +15,10 @@ service TaskListService {
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
+
+  rpc Participate(ParticipateRequest) returns (ParticipateResponse) {}
+  rpc CancelParticipation(CancelParticipationRequest) returns (CancelParticipationResponse) {}
+  rpc GetParticipants(GetParticipantsRequest) returns (GetParticipantsResponse) {}
 }
 
 message TaskList {
@@ -26,6 +30,7 @@ message TaskList {
   string title = 6;
   bool public_submissions = 7;
   string path = 8;
+  bool with_participations = 9;
 }
 
 message CreateRequest {
@@ -60,6 +65,7 @@ message UpdateRequest {
   bool set_null_time = 5;
   string title = 6;
   google.protobuf.BoolValue public_submissions = 7;
+  google.protobuf.BoolValue with_participations = 8;
 }
 
 message UpdateResponse {
@@ -82,9 +88,32 @@ message SearchRequest {
   string title = 6;
   google.protobuf.BoolValue is_permanent = 7;
   google.protobuf.BoolValue public_submissions = 8;
+  google.protobuf.BoolValue with_participations = 9;
 }
 
 message SearchResponse {
   repeated TaskList task_lists = 1;
   xmc.srv.core.searchmeta.Meta meta = 2;
+}
+
+message ParticipateRequest {
+  string task_list_id = 1;
+}
+
+message ParticipateResponse {
+}
+
+message CancelParticipationRequest {
+  string task_list_id = 1;
+}
+
+message CancelParticipationResponse {
+}
+
+message GetParticipantsRequest {
+  string task_list_id = 1;
+}
+
+message GetParticipantsResponse {
+  repeated string user_ids = 1;
 }
