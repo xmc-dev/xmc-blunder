@@ -166,7 +166,7 @@ Tehnologii:
 
 * Folosirea unui message queue precum NATS Streaming sau RabbitMQ pentru a
 	inlocui dispecerul si pentru a notifica elegant ambele parti (xmc-core si
-	eval-srv) de creearea si finalizarea job-urilor de evaluare.
+	eval-srv) de crearea si finalizarea job-urilor de evaluare.
 
 * Sistem de notificari. A inceput concursul, s-a terminat, s-au afisat
 	rezultatele, s-a facut o modificare la enuntul unei probleme etc. Poate fi
