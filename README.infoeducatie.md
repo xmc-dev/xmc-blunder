@@ -57,7 +57,7 @@ o pagina de wiki.
 
 ### Submission-ul (_Submission_)
 
-Un submission este o incercare de rezolvare a problemei. Ea provine de
+Un submission este o incercare de rezolvare a problemei. El provine de la
 utilizator. Submission-ul este invalid daca nu respecta restrictiile problemei.
 Scorul submission-ului este determinat de catre evaluatorul problemei asociate.
 Codul sursa al submission-ului este un atasament.
@@ -72,9 +72,6 @@ poate fi asociat cu mai multe probleme. Fiecare componenta a fiecarui test
 ## Instalarea sistemului
 
 ### Calea rapida
-
-Intrati in directorul `docker` din acest proiect si porniti XMC folosing
-docker-compose:
 
 ```bash
 docker-compose up
@@ -94,12 +91,12 @@ micro call xmc.srv.account AccountsService.Search
 Ultimul rezultat o sa contina un camp `client_id` cu o valoare lunga. Copiaza
 aceasta valoare in clipboard.
 
-2. Creeaza un symlink la config-ul de test in directorul `src` al frontendului:
+2. Copiaza config-ul de test in directorul `src` al frontendului:
 
 ```bash
 cd ~/src/xmc/frontend # inlocuieste cum trebuie, evident :)
 cd src
-ln -s config.dev.js config.js
+cp config.dev.js config.js
 ```
 
 3. Inlocuieste valoarea `clientId` cu cea copiata la pasul 1.
@@ -121,26 +118,27 @@ Lista tehnologiilor folosite in backend:
 	sisteme distribuite
 * [Consul](https://consul.io) - Service discovery si sincronizare de setari
 * [isolate](https://github.com/ioi/isolate) - Sandbox bazat pe Linux Containers
-	* Cu ajutorul lui [isowrap](https://github.com/xmc-dev/isowrap)
+	* Folosim o librarie scrisa de noi pentru a interactiona cu
+		isolate, [isowrap](https://github.com/xmc-dev/isowrap)
 * [Traefik](https://traefik.io) - Reverse proxy pentru componentele web
 * [S3](https://aws.amazon.com/s3/) - Serviciu de storage de la Amazon.
 	* In development si pe serverul de test folosim [Minio](https://www.minio.io/), un server de storage cu API compatibil S3.
 
 #### Componente
 
-* [xmc-core](https://github.com/xmc-dev/xmc-core) - Componenta principala, se
+* xmc-core - Componenta principala, se
 	ocupa de administrarea obiectelor (task, dataset, page etc)
-* [account-srv](https://github.com/xmc-dev/account-srv) - Gestionarea conturilor
+* account-srv - Gestionarea conturilor
 	si a sesiunilor. Conturile pot fi de utilizator sau de serviciu (roboti).
-* [auth-srv](https://github.com/xmc-dev/auth-srv) - Server de autorizare care
+* auth-srv - Server de autorizare care
 	implementeaza framework-ul OAuth2. Bazat pe [osin](https://github.com/RangelReale/osin). Token-urile sunt de forma [JSON Web Tokens](https://jwt.io) si sunt validate folosind o pereche de chei RSA.
-* [eval-srv](https://github.com/xmc-dev/eval-srv) - Primeste "job-uri" de
-	evaluare de submisii de la dispecer si le evalueaza intr-un sandbox.
+* eval-srv - Primeste "job-uri" de
+	evaluare de submisii de la dispatcher-srv si le evalueaza intr-un sandbox.
 	Rezultatul este trimis inapoi la xmc-core.
-* [dispatcher-srv](https://github.com/xmc-dev/dispatcher-srv) - Dispecerul de
+* dispatcher-srv - Dispecerul de
 	job-uri. Primeste job-uri de la xmc-core si le atribuie serverelor de
 	evaluare libere.
-* [api-srv](https://github.com/xmc-dev/api-srv) - Server de API REST. Expune
+* api-srv - Server de API REST. Expune
 	informatii de la xmc-core prin JSON.
 
 ### Frontend
@@ -163,3 +161,34 @@ Tehnologii:
 * [registry] este un fork al [acestui repo](https://github.com/DimShadoWWW/go-micro-consul-traefik) cu modificari aduse de noi pentru integrarea cu consul si cu versiuni noi Micro.
 
 [registry]: https://github.com/xmc-dev/registry
+
+## Cum poate fi imbunatatit XMC:
+
+* Folosirea unui message queue precum NATS Streaming sau RabbitMQ pentru a
+	inlocui dispecerul si pentru a notifica elegant ambele parti (xmc-core si
+	eval-srv) de creearea si finalizarea job-urilor de evaluare.
+
+* Sistem de notificari. A inceput concursul, s-a terminat, s-au afisat
+	rezultatele, s-a facut o modificare la enuntul unei probleme etc. Poate fi
+	implementat la fel de frumos cu un message queue.
+
+* O rescriere a backend-ului in Python/Ruby. Write code for humans, not
+	machines. Nu ar trebui sa se produca o scadere dramatica in performanta
+	programului, ci o crestere in performanta programatorului, pentru ca am
+	invatat _the hard way_ ca Go este de fapt foarte prolix ("verbose" in
+	romana). Daca vreau sa modific ceva intr-un DB model ori modific cod in 5
+	locuri diferite, ori imi inventez code generator-uri obscure si parsere
+	pentru ca Go nu ofera _metaprogramming_ de niciun fel si nici tipuri
+	generice. Parca e mai "high level" decat C doar prin faptul ca are un
+	garbage collector si librarie standard bogata si portabila. Altfel, as
+	recomanda Go pentru proiecte mai mici si/sau mai simple. XMC e foarte
+	incomplet si chiar si asa este un sistem destul de complex. Planuim sa il
+	rescriem, nu ar trebui sa dureze prea mult.
+
+* Raspunsurile de la API ar trebui sa fie mai "normalized", acum trebuie sa
+	trimiti cereri in toate partile ca sa obtii ceva util. Suspectez ca am ajuns
+	asa din cauza cantitatii enorme de cod Go pe care trebuia sa il scriu pentru
+	a face asta. Tl;dr mi-a fost lene :)
+
+* Trebuie sa ne prindem cum functioneaza JS frontend development-ul. (Nu reusim
+	niciodata lol).
