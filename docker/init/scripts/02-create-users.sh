@@ -1,3 +1,5 @@
+callback_url="${XMC_URL:-http://localhost:8082}"
+
 function cred() {
 	local scope="$1"
 	local name="$2"
@@ -28,7 +30,7 @@ micro call xmc.srv.account AccountsService.Create \
 
 # api bot
 micro call xmc.srv.account AccountsService.Create \
-	'{"account": {"type": 1, "owner_uuid": "'"$owner_uuid"'", "callback_url": "http://localhost:8082/login", "name": "API Bot", "is_public": true}}'
+	'{"account": {"type": 1, "owner_uuid": "'"$owner_uuid"'", "callback_url": "'"$callback_url"'/login", "name": "API Bot", "is_public": true}}'
 
 cred "xmc.dispatcher/create" "XMC Core" | kv_put "xmc.srv.core/credentials"
 cred "xmc.core/manage/submission xmc.eval/assign" "XMC Dispatcher" | kv_put "xmc.srv.dispatcher/credentials"
