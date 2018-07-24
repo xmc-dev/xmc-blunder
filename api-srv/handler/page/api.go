@@ -120,12 +120,14 @@ func (h *Handler) queryEndpoint(c *gin.Context) {
 	offset, _ := strconv.Atoi(c.Query("offset"))
 	path := c.Query("path")
 	title := c.Query("title")
+	objectID := c.Query("objectId")
 
 	req := &page.SearchRequest{
-		Limit:  uint32(limit),
-		Offset: uint32(offset),
-		Path:   path,
-		Title:  title,
+		Limit:    uint32(limit),
+		Offset:   uint32(offset),
+		Path:     path,
+		Title:    title,
+		ObjectId: objectID,
 	}
 	rsp, err := cl.Search(handler.C(c), req)
 	if err != nil {

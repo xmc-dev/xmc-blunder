@@ -33,6 +33,7 @@ message Page {
   google.protobuf.Timestamp latest_timestamp = 3;
   Version version = 4;
   google.protobuf.Timestamp deleted_at = 5;
+  string object_id = 6;
 }
 
 message CreateRequest {
@@ -116,6 +117,7 @@ message SearchRequest {
   uint32 offset = 2;
   string path = 3;
   string title = 4;
+  string object_id = 5;
 }
 
 message SearchResponse {

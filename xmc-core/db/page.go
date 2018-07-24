@@ -179,6 +179,9 @@ func (d *Datastore) SearchPage(req *ppage.SearchRequest) ([]*page.Page, uint32, 
 			req.Title,
 		)
 	}
+	if len(req.ObjectId) > 0 {
+		query = query.Where("object_id = ?", req.ObjectId)
+	}
 	var cnt uint32
 	if err := query.Model(&ps).Count(&cnt).Error; err != nil {
 		dd.Rollback()

@@ -185,6 +185,12 @@ Tehnologii:
 	incomplet si chiar si asa este un sistem destul de complex. Planuim sa il
 	rescriem, nu ar trebui sa dureze prea mult.
 
+* Folosirea unui generator de ORM-uri cum ar fi [acesta][sqlboiler] decat unul
+	bazat pe reflection. E o ciorba urata mai bine scriam SQL-ul de manuta.
+	Alternativ: vezi punctul de sus.
+
+[sqlboiler]: https://github.com/volatiletech/sqlboiler
+
 * Raspunsurile de la API ar trebui sa fie mai "normalized", acum trebuie sa
 	trimiti cereri in toate partile ca sa obtii ceva util. Suspectez ca am ajuns
 	asa din cauza cantitatii enorme de cod Go pe care trebuia sa il scriu pentru

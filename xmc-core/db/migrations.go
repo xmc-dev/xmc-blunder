@@ -583,6 +583,19 @@ func (d *Datastore) Migrate() error {
 				return tx.DropTable(&tasklist.Participation{}).Error
 			},
 		},
+		{
+			ID: "201807240015",
+			Migrate: func(tx *gorm.DB) error {
+				type Page struct {
+					ObjectID string
+				}
+
+				return tx.AutoMigrate(&Page{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Model(&page.Page{}).DropColumn("object_id").Error
+			},
+		},
 	})
 	return errors.Wrap(m.Migrate(), "failed to migrate schema")
 }

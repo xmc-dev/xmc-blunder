@@ -89,7 +89,7 @@ func (*TaskListService) Create(ctx context.Context, req *tasklist.CreateRequest,
 
 	path := "/" + req.TaskList.Name
 	pageID, err := util.CreatePage(dd, &page.CreateRequest{
-		Page:     &page.Page{Path: path},
+		Page:     &page.Page{Path: path, ObjectId: "task_list/" + id.String()},
 		Contents: taskListPage(req.TaskList.Title, id),
 		Title:    req.TaskList.Title,
 	})

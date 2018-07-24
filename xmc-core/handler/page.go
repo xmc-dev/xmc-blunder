@@ -53,7 +53,7 @@ func (ps *PageService) Create(ctx context.Context, req *page.CreateRequest, rsp 
 	case len(req.Title) == 0:
 		return errors.BadRequest(methodName, "invalid title")
 	}
-
+	req.Page.ObjectId = ""
 	dd := db.DB.BeginGroup()
 	id, err := util.CreatePage(dd, req)
 	if err != nil {

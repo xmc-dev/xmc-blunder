@@ -101,7 +101,7 @@ func (*TaskService) Create(ctx context.Context, req *task.CreateRequest, rsp *ta
 
 	path := "/archive/" + req.Task.Name
 	pageID, err := util.CreatePage(dd, &page.CreateRequest{
-		Page:     &page.Page{Path: path},
+		Page:     &page.Page{Path: path, ObjectId: "task/" + id.String()},
 		Contents: taskPage(req.Task.Title, id),
 		Title:    req.Task.Title,
 	})

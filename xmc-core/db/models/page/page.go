@@ -17,13 +17,15 @@ type Page struct {
 	LatestTimestamp time.Time
 	CreatedAt       time.Time
 	DeletedAt       *time.Time
+	ObjectID        string
 }
 
 func FromProto(pg *ppage.Page) *Page {
 	id, _ := uuid.Parse(pg.Id)
 	p := &Page{
-		ID:   id,
-		Path: pg.Path,
+		ID:       id,
+		Path:     pg.Path,
+		ObjectID: pg.ObjectId,
 	}
 	p.LatestTimestamp, _ = ptypes.Timestamp(pg.LatestTimestamp)
 	if pg.DeletedAt != nil {
@@ -36,8 +38,9 @@ func FromProto(pg *ppage.Page) *Page {
 
 func (p *Page) ToProto() *ppage.Page {
 	pg := &ppage.Page{
-		Id:   p.ID.String(),
-		Path: "/" + strings.Replace(p.Path, ".", "/", -1),
+		Id:       p.ID.String(),
+		Path:     "/" + strings.Replace(p.Path, ".", "/", -1),
+		ObjectId: p.ObjectID,
 	}
 	pg.LatestTimestamp, _ = ptypes.TimestampProto(p.LatestTimestamp)
 	if p.DeletedAt != nil {

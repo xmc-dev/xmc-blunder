@@ -9,6 +9,7 @@ import (
 
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/xmc-dev/xmc/xmc-core/service"
 )
@@ -35,6 +36,12 @@ type ErrHasDependants string
 
 func (hd ErrHasDependants) Error() string {
 	return fmt.Sprintf("db: one or more %s depend on this object or have invalid dependencies", string(hd))
+}
+
+type ErrObjectTypeNotSupported string
+
+func (otns ErrObjectTypeNotSupported) Error() string {
+	return fmt.Sprintf("db: no such object type %s", string(otns))
 }
 
 func e(err error, msg string) error {
@@ -83,6 +90,23 @@ func (d *Datastore) NotEmpty(table string) (bool, error) {
 	}
 
 	return v, nil
+}
+
+var objectTypeToTable = map[string]string{
+	"page":      "pages",
+	"task":      "tasks",
+	"task_list": "task_lists",
+}
+
+func (d *Datastore) ObjectExists(objectType string, objectID uuid.UUID) (bool, error) {
+	table, ok := objectTypeToTable[objectType]
+	if !ok {
+		return false, ErrObjectTypeNotSupported(objectType)
+	}
+	exists := false
+	err := d.db.Table(table).Where("id = ?", objectID).Row().Scan(&exists)
+
+	return exists, e(err, "couldn't check if "+objectType+" id "+objectID.String()+" exists")
 }
 
 // begin marks the datastore session as being in an internal transaction, used
