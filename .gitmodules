@@ -1,0 +1,3 @@
+[submodule "auth-srv/static/login"]
+	path = auth-srv/static/login
+	url = https://github.com/xmc-dev/login
